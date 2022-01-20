@@ -9,10 +9,13 @@ function App() {
   const[countDown, setCountDown] = useState(SECONDS)
   const[currInput, setCurrInput] = useState('')
   const[currWordIndex, setCurrWordIndex] = useState(0)
+  const[currCharIndex, setCurrCharIndex] = useState(-1)
+  const[currChar, setCurrChar] = useState("")
   const[correct, setCorrect] = useState(0)
   const[incorrect, setIncorrect] = useState(0)
   const[status, setStatus] = useState('waiting')
   const textInput = useRef(null)
+
 
   useEffect(() => {
     setWords(generateWords())
@@ -34,6 +37,8 @@ function App() {
       setCurrWordIndex(0)
       setCorrect(0)
       setIncorrect(0)
+      setCurrCharIndex(-1)
+      setCurrChar("")
     }
     if(status !== 'started') {
       setStatus('started')
@@ -53,12 +58,20 @@ function App() {
     
   }
 
-  function handleKeyDown({keyCode}) {
+  function handleKeyDown({keyCode, key}) {
     // space bar
     if(keyCode === 32 ) {
       checkMatch()
       setCurrInput("")
       setCurrWordIndex(currWordIndex + 1)
+      setCurrCharIndex(-1)
+    } else if (keyCode === 8) {
+      setCurrCharIndex(currCharIndex - 1)
+      setCurrChar('')
+    }
+    else {
+      setCurrCharIndex(currCharIndex + 1)
+      setCurrChar(key)
     }
   }
 
@@ -70,6 +83,19 @@ function App() {
     } else {
       setIncorrect(incorrect + 1)
     }
+  }
+
+  function getCharClass(wordIdx, charIdx, char) {
+    if(wordIdx === currWordIndex && charIdx === currCharIndex && currChar && status !== 'finished')
+      if(char === currChar) {
+        return 'has-background-success'
+      } else {
+        return 'has-background-danger'
+      } else if (wordIdx === currWordIndex && currCharIndex >= words[currWordIndex].length)
+        return 'has-background-danger'
+      else {
+        return ''
+      }
   }
 
   return (
@@ -96,7 +122,7 @@ function App() {
                     <span key ={i}>
                       <span>
                         {word.split("").map((char, idx) => (
-                          <span key={idx}>{char}</span>
+                          <span className={getCharClass(i, idx, char)} key={idx}>{char}</span>
                         )) } 
                       </span>
                       <span> </span>
